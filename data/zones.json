@@ -1,0 +1,18 @@
+{
+  "note": "Zones of the demo. bbox = [west, south, east, north] in degrees (WGS84); center = [longitude, latitude] the camera looks at. Boxes do not overlap.",
+  "zones": [
+    { "id":"queenstown-central", "name":"Queenstown Central", "group":"Queenstown", "bbox":[168.644,-45.042,168.6777,-45.0115], "center":[168.6605,-45.0316] },
+    { "id":"fernhill-sunshine-bay", "name":"Fernhill & Sunshine Bay", "group":"Queenstown", "bbox":[168.62,-45.0495,168.644,-45.0285], "center":[168.632,-45.0405] },
+    { "id":"frankton-road", "name":"Frankton Road", "group":"Queenstown", "bbox":[168.6777,-45.0353,168.722,-45.0115], "center":[168.705,-45.0205] },
+    { "id":"kelvin-heights", "name":"Kelvin Heights", "group":"Queenstown", "bbox":[168.6777,-45.05,168.7085,-45.0353], "center":[168.6925,-45.042] },
+    { "id":"frankton", "name":"Frankton", "group":"Queenstown", "bbox":[168.722,-45.037,168.76,-44.9825], "center":[168.7467,-45.0118] },
+    { "id":"arthurs-point", "name":"Arthurs Point", "group":"Queenstown", "bbox":[168.6645,-45.0115,168.692,-44.9765], "center":[168.677,-44.9845] },
+    { "id":"lake-hayes-shotover-country", "name":"Lake Hayes & Shotover Country", "group":"Queenstown", "bbox":[168.76,-45.0113,168.8375,-44.96], "center":[168.783,-45.0045] },
+    { "id":"jacks-point", "name":"Jack's Point", "group":"Queenstown", "bbox":[168.721,-45.104,168.773,-45.037], "center":[168.7475,-45.0685] },
+    { "id":"arrowtown", "name":"Arrowtown", "group":"Arrowtown", "bbox":[168.782,-44.96,168.85,-44.935], "center":[168.835,-44.944] },
+    { "id":"wanaka-central", "name":"Wanaka Central", "group":"Wanaka", "bbox":[169.093,-44.7285,169.17,-44.6935], "center":[169.134,-44.7] },
+    { "id":"wanaka-north", "name":"Wanaka North", "group":"Wanaka", "bbox":[169.1035,-44.6935,169.144,-44.6575], "center":[169.135,-44.678] },
+    { "id":"northlake", "name":"Northlake", "group":"Wanaka", "bbox":[169.144,-44.6935,169.17,-44.662], "center":[169.158,-44.6765] },
+    { "id":"albert-town", "name":"Albert Town", "group":"Wanaka", "bbox":[169.17,-44.7035,169.203,-44.672], "center":[169.182,-44.684] }
+  ]
+}

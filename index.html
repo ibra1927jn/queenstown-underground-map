@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Underground Networks – Queenstown Lakes (demo)</title>
+    <meta name="description" content="Demo: 2D/3D map of underground utility networks in the Queenstown Lakes District. Approximate depths – not for excavation." />
+    <meta name="theme-color" content="#13232f" />
+    <link rel="icon" href="assets/favicon.svg?v=a66f5ea37d" type="image/svg+xml" />
+
+    <!-- Open the connections to the map servers early, while the page is still loading -->
+    <link rel="preconnect" href="https://cesium.com" />
+    <link rel="preconnect" href="https://cesium.com" crossorigin />
+    <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin />
+    <link rel="preconnect" href="https://tiles.mapterhorn.com" crossorigin />
+
+    <!-- CesiumJS (3D map engine), pinned to one version -->
+    <link rel="stylesheet" href="https://cesium.com/downloads/cesiumjs/releases/1.147/Build/Cesium/Widgets/widgets.css" />
+    <link rel="stylesheet" href="styles/main.css?v=17b34ea6d2" />
+
+    <!-- module preloads: start (node scripts/update-preloads.mjs) -->
+    <script type="importmap">{"imports":{"./src/config.js":"./src/config.js?v=3bfdebc64f","./src/layers/assetIcons.js":"./src/layers/assetIcons.js?v=5d2809b206","./src/layers/buildingShapes.js":"./src/layers/buildingShapes.js?v=8f4d18144f","./src/layers/buildingsLayer.js":"./src/layers/buildingsLayer.js?v=5ec71d8b88","./src/layers/groundHeights.js":"./src/layers/groundHeights.js?v=4323ef15fd","./src/layers/networkLayer.js":"./src/layers/networkLayer.js?v=ef8327288f","./src/layers/pipeGeometry.js":"./src/layers/pipeGeometry.js?v=4c2f5f5d9a","./src/layers/powerCards.js":"./src/layers/powerCards.js?v=e521e063f6","./src/layers/pressureZonesLayer.js":"./src/layers/pressureZonesLayer.js?v=99600540a2","./src/layers/zoneContent.js":"./src/layers/zoneContent.js?v=2295d82c0d","./src/main.js":"./src/main.js?v=634636edba","./src/map/baseMap.js":"./src/map/baseMap.js?v=7a766f0a7d","./src/map/camera.js":"./src/map/camera.js?v=14ca220089","./src/map/cesium.js":"./src/map/cesium.js?v=713cfed40c","./src/map/controls.js":"./src/map/controls.js?v=288a376643","./src/map/labelDeclutter.js":"./src/map/labelDeclutter.js?v=268ccc0f4f","./src/map/look.js":"./src/map/look.js?v=88a82a239d","./src/map/picking.js":"./src/map/picking.js?v=00929aba82","./src/map/quality.js":"./src/map/quality.js?v=958d7f1611","./src/map/render.js":"./src/map/render.js?v=5d02c0c5de","./src/map/terrain.js":"./src/map/terrain.js?v=140d205dad","./src/map/undergroundView.js":"./src/map/undergroundView.js?v=f01caa10a8","./src/map/viewer.js":"./src/map/viewer.js?v=d6854c48bc","./src/map/viewMode.js":"./src/map/viewMode.js?v=efde1c136d","./src/tools/addedPipesTool.js":"./src/tools/addedPipesTool.js?v=826b9c9e92","./src/tools/addressFinder.js":"./src/tools/addressFinder.js?v=2a84f65db1","./src/tools/excavationFittings.js":"./src/tools/excavationFittings.js?v=531ffa37bc","./src/tools/excavationView.js":"./src/tools/excavationView.js?v=eea0e963a7","./src/tools/groundShapes.js":"./src/tools/groundShapes.js?v=1e64e505fe","./src/tools/openGroundView.js":"./src/tools/openGroundView.js?v=d62cc05dc8","./src/tools/pipeRun.js":"./src/tools/pipeRun.js?v=49cb0188f8","./src/tools/profileView.js":"./src/tools/profileView.js?v=e705466fde","./src/tools/shutoffView.js":"./src/tools/shutoffView.js?v=a837d93dae","./src/ui/baseMapControl.js":"./src/ui/baseMapControl.js?v=254323150a","./src/ui/infoPanel.js":"./src/ui/infoPanel.js?v=610baeb0f7","./src/ui/layersPanel.js":"./src/ui/layersPanel.js?v=f883c8b9ec","./src/ui/navButtons.js":"./src/ui/navButtons.js?v=80cca1c40d","./src/ui/profileDrawing.js":"./src/ui/profileDrawing.js?v=5ed4051914","./src/ui/status.js":"./src/ui/status.js?v=441a3d98db","./src/ui/viewMenu.js":"./src/ui/viewMenu.js?v=0727c059a1","./src/ui/yearsControl.js":"./src/ui/yearsControl.js?v=0aa65a658a","./src/util/addedPipes.js":"./src/util/addedPipes.js?v=d0c186b6ea","./src/util/addressSearch.js":"./src/util/addressSearch.js?v=2106d1dbff","./src/util/declutter.js":"./src/util/declutter.js?v=b5e14a1ca9","./src/util/dom.js":"./src/util/dom.js?v=c9a88c9e66","./src/util/flow.js":"./src/util/flow.js?v=796ed45054","./src/util/http.js":"./src/util/http.js?v=9d1702e2b8","./src/util/packedGeojson.js":"./src/util/packedGeojson.js?v=569316496f","./src/util/shutoff.js":"./src/util/shutoff.js?v=4d792d1234","./src/zones/zoneLayers.js":"./src/zones/zoneLayers.js?v=a35f077c29","./src/zones/zones.js":"./src/zones/zones.js?v=5950f1543c"}}</script>
+    <script id="data-versions" type="application/json">{"data/addresses.json":"4bf8a7927f","data/albert-town/bores.geojson":"ae50dd5bbb","data/albert-town/buildings.geojson":"dfbe02a74e","data/albert-town/power-detail.geojson":"9a98321936","data/albert-town/power.geojson":"31259747a7","data/albert-town/stormwater-detail.geojson":"9968849a47","data/albert-town/stormwater.geojson":"b650826d04","data/albert-town/wastewater-detail.geojson":"6d92008d94","data/albert-town/wastewater.geojson":"56071e5255","data/albert-town/water-detail.geojson":"089d64b6d1","data/albert-town/water.geojson":"514892c303","data/arrowtown/bores.geojson":"2a501e4f87","data/arrowtown/buildings.geojson":"acbb91bad8","data/arrowtown/power-detail.geojson":"d91ad9be7a","data/arrowtown/power.geojson":"ea1f93587d","data/arrowtown/stormwater-detail.geojson":"b17e24d96c","data/arrowtown/stormwater.geojson":"ba9925b4cf","data/arrowtown/wastewater-detail.geojson":"552fbd69dd","data/arrowtown/wastewater.geojson":"c7aaff5b9f","data/arrowtown/water-detail.geojson":"9dabfc52a2","data/arrowtown/water.geojson":"60fd791387","data/arthurs-point/bores.geojson":"7898f47c30","data/arthurs-point/buildings.geojson":"66adcf2638","data/arthurs-point/power-detail.geojson":"2eda00f463","data/arthurs-point/power.geojson":"7d9cf350f6","data/arthurs-point/stormwater-detail.geojson":"ad8af06ba4","data/arthurs-point/stormwater.geojson":"79c08dc76b","data/arthurs-point/wastewater-detail.geojson":"3d522428db","data/arthurs-point/wastewater.geojson":"638b4d3afd","data/arthurs-point/water-detail.geojson":"3b7569351c","data/arthurs-point/water.geojson":"4817292bd9","data/fernhill-sunshine-bay/bores.geojson":"986c52a0a1","data/fernhill-sunshine-bay/buildings.geojson":"b0d2735e6e","data/fernhill-sunshine-bay/power-detail.geojson":"0ae71cfe83","data/fernhill-sunshine-bay/power.geojson":"d9e2e872f9","data/fernhill-sunshine-bay/stormwater-detail.geojson":"98d0c98827","data/fernhill-sunshine-bay/stormwater.geojson":"1975d3a6e5","data/fernhill-sunshine-bay/wastewater-detail.geojson":"e8d52b2bd6","data/fernhill-sunshine-bay/wastewater.geojson":"2e6101e10c","data/fernhill-sunshine-bay/water-detail.geojson":"1343e33553","data/fernhill-sunshine-bay/water.geojson":"b03117af29","data/frankton/bores.geojson":"0c57796a45","data/frankton/buildings.geojson":"a905d8d4a3","data/frankton/power-detail.geojson":"584033b3b1","data/frankton/power.geojson":"daf6a78241","data/frankton/stormwater-detail.geojson":"4f972c0a1d","data/frankton/stormwater.geojson":"ef22add911","data/frankton/wastewater-detail.geojson":"b6d1934ff9","data/frankton/wastewater.geojson":"5c3cb81b49","data/frankton/water-detail.geojson":"69885021ea","data/frankton/water.geojson":"a39fd566f9","data/frankton-road/bores.geojson":"b4b7440304","data/frankton-road/buildings.geojson":"682b539f1b","data/frankton-road/power-detail.geojson":"5d52dbd04a","data/frankton-road/power.geojson":"32f4460c5a","data/frankton-road/stormwater-detail.geojson":"65f89d2e39","data/frankton-road/stormwater.geojson":"6eeaaa3f4f","data/frankton-road/wastewater-detail.geojson":"5dc6f9e3c0","data/frankton-road/wastewater.geojson":"1ea9e3c626","data/frankton-road/water-detail.geojson":"51bcb813ba","data/frankton-road/water.geojson":"e6559588d0","data/jacks-point/bores.geojson":"26e5446bd4","data/jacks-point/buildings.geojson":"a6cdda65ca","data/jacks-point/power-detail.geojson":"1f6c52fdff","data/jacks-point/power.geojson":"9b9465d32b","data/jacks-point/stormwater-detail.geojson":"7ac9f12427","data/jacks-point/stormwater.geojson":"de101c061a","data/jacks-point/wastewater-detail.geojson":"0305551e15","data/jacks-point/wastewater.geojson":"d92f16fd0e","data/jacks-point/water-detail.geojson":"96288b15e5","data/jacks-point/water.geojson":"c672b2244c","data/kelvin-heights/bores.geojson":"986c52a0a1","data/kelvin-heights/buildings.geojson":"7451572a0a","data/kelvin-heights/power-detail.geojson":"c1c7fd2186","data/kelvin-heights/power.geojson":"4e0a8e3050","data/kelvin-heights/stormwater-detail.geojson":"c09b3742d4","data/kelvin-heights/stormwater.geojson":"d4e44191e0","data/kelvin-heights/wastewater-detail.geojson":"73be2e0c32","data/kelvin-heights/wastewater.geojson":"77e1bd1771","data/kelvin-heights/water-detail.geojson":"3c49826ed8","data/kelvin-heights/water.geojson":"df7740927d","data/lake-hayes-shotover-country/bores.geojson":"82710376ce","data/lake-hayes-shotover-country/buildings.geojson":"d5b4891c68","data/lake-hayes-shotover-country/power-detail.geojson":"8b2d083bdc","data/lake-hayes-shotover-country/power.geojson":"d0ca7df5e2","data/lake-hayes-shotover-country/stormwater-detail.geojson":"079184a89f","data/lake-hayes-shotover-country/stormwater.geojson":"a30305da5a","data/lake-hayes-shotover-country/wastewater-detail.geojson":"0b0e7ff59b","data/lake-hayes-shotover-country/wastewater.geojson":"d3b339916b","data/lake-hayes-shotover-country/water-detail.geojson":"1f35ee93d1","data/lake-hayes-shotover-country/water.geojson":"dc639f7ebe","data/northlake/bores.geojson":"45d95a6fb3","data/northlake/buildings.geojson":"08c03e5d54","data/northlake/power-detail.geojson":"991a35e16f","data/northlake/power.geojson":"e1ef070d51","data/northlake/stormwater-detail.geojson":"ce3468d6b0","data/northlake/stormwater.geojson":"31d453f1c5","data/northlake/wastewater-detail.geojson":"d3006e51cc","data/northlake/wastewater.geojson":"fb14db3762","data/northlake/water-detail.geojson":"4923066b23","data/northlake/water.geojson":"ea84b51ad7","data/queenstown-central/bores.geojson":"dc00c70070","data/queenstown-central/buildings.geojson":"90d802f24f","data/queenstown-central/power-detail.geojson":"260321b239","data/queenstown-central/power.geojson":"4b36273c08","data/queenstown-central/stormwater-detail.geojson":"e604bafb68","data/queenstown-central/stormwater.geojson":"6200d68602","data/queenstown-central/wastewater-detail.geojson":"46a262de58","data/queenstown-central/wastewater.geojson":"a64aa386e0","data/queenstown-central/water-detail.geojson":"8f444ab661","data/queenstown-central/water.geojson":"8177ab33a5","data/wanaka-central/bores.geojson":"02787976b4","data/wanaka-central/buildings.geojson":"5c3b736dc4","data/wanaka-central/power-detail.geojson":"891400bb56","data/wanaka-central/power.geojson":"c7e8d5ae94","data/wanaka-central/stormwater-detail.geojson":"93b4c0f74e","data/wanaka-central/stormwater.geojson":"7cf9285e68","data/wanaka-central/wastewater-detail.geojson":"b9b719d38b","data/wanaka-central/wastewater.geojson":"e28a082d0b","data/wanaka-central/water-detail.geojson":"9c495459c0","data/wanaka-central/water.geojson":"1bf91e923c","data/wanaka-north/bores.geojson":"f84e2cc41d","data/wanaka-north/buildings.geojson":"59c5b492d3","data/wanaka-north/power-detail.geojson":"19476e6144","data/wanaka-north/power.geojson":"edb366a929","data/wanaka-north/stormwater-detail.geojson":"cbba1fe473","data/wanaka-north/stormwater.geojson":"6b5bb1c3ad","data/wanaka-north/wastewater-detail.geojson":"a06d00b172","data/wanaka-north/wastewater.geojson":"88fa4964d9","data/wanaka-north/water-detail.geojson":"a9fa1b0d5d","data/wanaka-north/water.geojson":"21b88e605b","data/water-pressure-zones.geojson":"71efc3d1b0","data/water-shutoff.json":"8aea3bbb6d","data/zones.json":"baf8c6adeb"}</script>
+    <link rel="modulepreload" href="src/config.js?v=3bfdebc64f" />
+    <link rel="modulepreload" href="src/layers/assetIcons.js?v=5d2809b206" />
+    <link rel="modulepreload" href="src/layers/buildingShapes.js?v=8f4d18144f" />
+    <link rel="modulepreload" href="src/layers/buildingsLayer.js?v=5ec71d8b88" />
+    <link rel="modulepreload" href="src/layers/groundHeights.js?v=4323ef15fd" />
+    <link rel="modulepreload" href="src/layers/networkLayer.js?v=ef8327288f" />
+    <link rel="modulepreload" href="src/layers/pipeGeometry.js?v=4c2f5f5d9a" />
+    <link rel="modulepreload" href="src/layers/powerCards.js?v=e521e063f6" />
+    <link rel="modulepreload" href="src/layers/pressureZonesLayer.js?v=99600540a2" />
+    <link rel="modulepreload" href="src/layers/zoneContent.js?v=2295d82c0d" />
+    <link rel="modulepreload" href="src/map/baseMap.js?v=7a766f0a7d" />
+    <link rel="modulepreload" href="src/map/camera.js?v=14ca220089" />
+    <link rel="modulepreload" href="src/map/cesium.js?v=713cfed40c" />
+    <link rel="modulepreload" href="src/map/controls.js?v=288a376643" />
+    <link rel="modulepreload" href="src/map/labelDeclutter.js?v=268ccc0f4f" />
+    <link rel="modulepreload" href="src/map/look.js?v=88a82a239d" />
+    <link rel="modulepreload" href="src/map/picking.js?v=00929aba82" />
+    <link rel="modulepreload" href="src/map/quality.js?v=958d7f1611" />
+    <link rel="modulepreload" href="src/map/render.js?v=5d02c0c5de" />
+    <link rel="modulepreload" href="src/map/terrain.js?v=140d205dad" />
+    <link rel="modulepreload" href="src/map/undergroundView.js?v=f01caa10a8" />
+    <link rel="modulepreload" href="src/map/viewMode.js?v=efde1c136d" />
+    <link rel="modulepreload" href="src/map/viewer.js?v=d6854c48bc" />
+    <link rel="modulepreload" href="src/tools/addedPipesTool.js?v=826b9c9e92" />
+    <link rel="modulepreload" href="src/tools/addressFinder.js?v=2a84f65db1" />
+    <link rel="modulepreload" href="src/tools/excavationFittings.js?v=531ffa37bc" />
+    <link rel="modulepreload" href="src/tools/excavationView.js?v=eea0e963a7" />
+    <link rel="modulepreload" href="src/tools/groundShapes.js?v=1e64e505fe" />
+    <link rel="modulepreload" href="src/tools/openGroundView.js?v=d62cc05dc8" />
+    <link rel="modulepreload" href="src/tools/pipeRun.js?v=49cb0188f8" />
+    <link rel="modulepreload" href="src/tools/profileView.js?v=e705466fde" />
+    <link rel="modulepreload" href="src/tools/shutoffView.js?v=a837d93dae" />
+    <link rel="modulepreload" href="src/ui/baseMapControl.js?v=254323150a" />
+    <link rel="modulepreload" href="src/ui/infoPanel.js?v=610baeb0f7" />
+    <link rel="modulepreload" href="src/ui/layersPanel.js?v=f883c8b9ec" />
+    <link rel="modulepreload" href="src/ui/navButtons.js?v=80cca1c40d" />
+    <link rel="modulepreload" href="src/ui/profileDrawing.js?v=5ed4051914" />
+    <link rel="modulepreload" href="src/ui/status.js?v=441a3d98db" />
+    <link rel="modulepreload" href="src/ui/viewMenu.js?v=0727c059a1" />
+    <link rel="modulepreload" href="src/ui/yearsControl.js?v=0aa65a658a" />
+    <link rel="modulepreload" href="src/util/addedPipes.js?v=d0c186b6ea" />
+    <link rel="modulepreload" href="src/util/addressSearch.js?v=2106d1dbff" />
+    <link rel="modulepreload" href="src/util/declutter.js?v=b5e14a1ca9" />
+    <link rel="modulepreload" href="src/util/dom.js?v=c9a88c9e66" />
+    <link rel="modulepreload" href="src/util/flow.js?v=796ed45054" />
+    <link rel="modulepreload" href="src/util/http.js?v=9d1702e2b8" />
+    <link rel="modulepreload" href="src/util/packedGeojson.js?v=569316496f" />
+    <link rel="modulepreload" href="src/util/shutoff.js?v=4d792d1234" />
+    <link rel="modulepreload" href="src/zones/zoneLayers.js?v=a35f077c29" />
+    <link rel="modulepreload" href="src/zones/zones.js?v=5950f1543c" />
+    <!-- module preloads: end -->
+  </head>
+
+  <body>
+    <div id="app">
+      <main class="stage">
+        <div id="map" class="map" aria-label="Map of the Queenstown Lakes District"></div>
+
+        <header class="topbar">
+          <div class="brand card">
+            <span class="brand__mark" aria-label="alze">alz<i>e</i></span>
+            <div class="brand__text">
+              <span class="brand__title">Underground Networks</span>
+              <span class="brand__subtitle">Queenstown Lakes · demo</span>
+            </div>
+          </div>
+
+          <div class="controls card">
+            <label class="visually-hidden" for="zone-select">Zone</label>
+            <select id="zone-select" class="select" title="Go to a zone"></select>
+
+            <div class="segmented" role="group" aria-label="Map view">
+              <button type="button" data-mode="2d" aria-pressed="false" title="Flat map seen from above">2D</button>
+              <button type="button" data-mode="3d" aria-pressed="true" title="3D view with terrain and buildings">3D</button>
+            </div>
+
+            <button type="button" id="search-toggle" class="icon-button" aria-controls="search-panel" aria-expanded="false" title="Find a street or address">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <circle cx="10.5" cy="10.5" r="6.5" />
+                <path d="m15.5 15.5 5 5" />
+              </svg>
+              <span class="visually-hidden">Find a street or address</span>
+            </button>
+
+            <button type="button" id="layers-toggle" class="icon-button" aria-controls="layers-panel" aria-expanded="false" title="Layers">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 3 2.5 8 12 13l9.5-5L12 3Z" />
+                <path d="m2.5 12 9.5 5 9.5-5M2.5 16l9.5 5 9.5-5" />
+              </svg>
+              <span class="visually-hidden">Layers</span>
+            </button>
+
+            <button type="button" id="added-toggle" class="icon-button" aria-controls="added-panel" aria-expanded="false" title="Add a pipe or cable the map does not have">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 20l1-4.5L16.5 4a2.1 2.1 0 0 1 3 3L8 18.5 4 20Z" />
+                <path d="m14.5 6 3 3" />
+              </svg>
+              <span class="visually-hidden">Add a pipe or cable</span>
+            </button>
+          </div>
+          <div id="view-menu" class="view-menu card">
+            <button type="button" class="view-menu__button" aria-haspopup="menu" aria-expanded="false" aria-controls="view-menu-list" title="How the map is shown: map, underground, open ground, excavation, by year, flow direction">
+              <svg class="view-menu__eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" /><circle cx="12" cy="12" r="3" /></svg>
+              <span class="view-menu__word">View<span class="view-menu__colon">:</span></span> <span class="view-menu__current">Map</span>
+              <svg class="view-menu__chevron" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1.5l5 5 5-5" /></svg>
+            </button>
+            <div id="view-menu-list" class="view-menu__list" role="menu" aria-label="View" hidden>
+              <button type="button" class="view-menu__item" role="menuitemradio" aria-checked="true" data-view="map">
+                <span class="view-menu__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6.5 9 4l6 2.5L21 4v13.5L15 20l-6-2.5L3 20z" /><path d="M9 4v13.5M15 6.5V20" /></svg></span>
+                <span class="view-menu__text"><strong>Map</strong><span>The normal map, pipes along the streets</span></span>
+              </button>
+              <button type="button" class="view-menu__item" role="menuitemradio" aria-checked="false" data-view="underground">
+                <span class="view-menu__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9h20" stroke-dasharray="2.5 2.5" /><path d="M5 14.5h14" /><path d="M8 19h8" /><path d="M12 3v3.5" /></svg></span>
+                <span class="view-menu__text"><strong>Underground</strong><span>See-through ground, every pipe at its depth</span></span>
+              </button>
+              <button type="button" class="view-menu__item" role="menuitemradio" aria-checked="false" data-view="open-ground">
+                <span class="view-menu__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 7h5M17 7h5" /><path d="M7 7v5M17 7v5" stroke-dasharray="2 2.5" /><circle cx="12" cy="15.5" r="3.5" /><path d="M2 15.5h6.5M15.5 15.5H22" /></svg></span>
+                <span class="view-menu__text"><strong>Open ground</strong><span>Real shapes round where you look, and a face-on cut</span></span>
+              </button>
+              <button type="button" class="view-menu__item" role="menuitemradio" aria-checked="false" data-view="excavation">
+                <span class="view-menu__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 8l5-3h10l5 3" /><path d="M2 8v11l5 2h10l5-2V8" /><path d="M7 5v16M17 5v16" /><circle cx="12" cy="14" r="2" /></svg></span>
+                <span class="view-menu__text"><strong>Excavation</strong><span>Dig a pit where you look and walk round it</span></span>
+              </button>
+              <hr class="view-menu__rule" role="separator" />
+              <button type="button" class="view-menu__item" role="menuitemcheckbox" aria-checked="false" data-toggle="years">
+                <span class="view-menu__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /><path d="M8 15h3M13 15h3M8 18h3" /></svg></span>
+                <span class="view-menu__text"><strong>By year</strong><span>Colours by decade and a timeline, with any view</span></span>
+                <span class="view-menu__switch" aria-hidden="true"></span>
+              </button>
+              <button type="button" class="view-menu__item" role="menuitemcheckbox" aria-checked="false" data-toggle="flow">
+                <span class="view-menu__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h15" /><path d="M13 6l6 6-6 6" /><path d="M3 6h5M3 18h5" /></svg></span>
+                <span class="view-menu__text"><strong>Flow direction</strong><span>Arrows: white from the council's levels (wastewater, stormwater), pale blue an estimate (water supply)</span></span>
+                <span class="view-menu__switch" aria-hidden="true"></span>
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <aside id="search-panel" class="panel panel--search card" aria-label="Find a street or address" hidden>
+          <div class="panel__header">
+            <h2 class="panel__title">Find a street or address</h2>
+            <button type="button" class="panel__close" aria-label="Close the search">×</button>
+          </div>
+          <input class="search__input" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="12 Camp St" aria-label="Street or address" />
+          <p class="search__hint panel__note"></p>
+          <ul class="search__results"></ul>
+          <button type="button" class="search__remove" hidden>Remove the pin</button>
+          <p class="panel__note">Addresses: Toitū Te Whenua LINZ, CC BY 4.0. Only the zones of this map.</p>
+        </aside>
+
+        <aside id="added-panel" class="panel panel--added card" aria-label="Pipes and cables you add" hidden>
+          <div class="panel__header">
+            <h2 class="panel__title">Pipes and cables you add</h2>
+            <button type="button" class="panel__close" aria-label="Close">×</button>
+          </div>
+          <button type="button" class="added__draw">Add a pipe or cable</button>
+          <p class="added__empty panel__note">Nothing added yet. Draw what you know is in the ground and the map does not show.</p>
+          <ul class="added__list"></ul>
+          <div class="added__copy">
+            <button type="button" class="added__save" title="Writes a file with every pipe you added">Save a copy</button>
+            <button type="button" class="added__load" title="Reads such a file: on another device, or to get them back">Load a copy</button>
+            <input type="file" class="added__file" accept=".geojson,.json,application/geo+json,application/json" hidden />
+          </div>
+          <p class="added__status panel__note" role="status" hidden></p>
+          <p class="panel__note">Kept in this browser, on this device only: not sent anywhere, not in the council’s records, drawn dashed. Clearing the browser’s data removes them – save a copy now and then.</p>
+        </aside>
+
+        <aside id="added-form" class="panel panel--form card" aria-label="What the pipe or cable is" hidden>
+          <form novalidate>
+            <div class="panel__header">
+              <h2 class="panel__title form__title">New pipe or cable</h2>
+            </div>
+            <fieldset class="form__kinds">
+              <legend>What is it?</legend>
+            </fieldset>
+            <div class="form__row">
+              <label>Size, mm<input name="size" type="text" inputmode="numeric" autocomplete="off" placeholder="250" /></label>
+              <label>Depth to top, m<input name="depth" type="text" inputmode="decimal" autocomplete="off" placeholder="1.0" /></label>
+              <label>Material<input name="material" type="text" autocomplete="off" maxlength="60" placeholder="PE" /></label>
+            </div>
+            <label class="form__note">Note<input name="note" type="text" autocomplete="off" maxlength="300" placeholder="What you know about it" /></label>
+            <p class="form__problem" role="alert" hidden></p>
+            <div class="form__buttons">
+              <button type="submit" class="form__save">Save</button>
+              <button type="button" class="form__back">Back</button>
+              <button type="button" class="form__delete" hidden>Delete</button>
+            </div>
+            <p class="panel__note">Only what it is must be said. With no depth the map uses a usual figure for that kind and says so.</p>
+          </form>
+        </aside>
+
+        <aside id="layers-panel" class="panel panel--layers card" aria-label="Layers" hidden>
+          <div class="panel__header">
+            <h2 class="panel__title">Layers</h2>
+          </div>
+          <div id="base-map" class="base-map" hidden>
+            <span id="base-map-label" class="base-map__label">Background</span>
+            <div class="segmented segmented--small" role="group" aria-labelledby="base-map-label">
+              <button type="button" data-base="map" aria-pressed="true">Street map</button>
+              <button type="button" data-base="photo" aria-pressed="false" title="Aerial photos of Toitū Te Whenua LINZ. With the timeline of “by year installed”: the photos of that time">Aerial photo</button>
+            </div>
+            <p class="base-map__words" hidden></p>
+          </div>
+          <ul id="layer-list" class="layer-list"></ul>
+          <p class="panel__note">
+            Tap a building or a pipe for details. Pipe depths are approximate: recorded or estimated, as labelled.
+            Pipes: contains data sourced from Queenstown Lakes District Council, licensed under
+            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a> (modified: depths derived or estimated).
+            Buildings: outlines and heights (measured from LiDAR) from Queenstown Lakes District Council, CC BY 4.0;
+            kinds and names © OpenStreetMap contributors. Roof shapes are drawn from the measured heights.
+            Bores and monitoring sites: Otago Regional Council, CC BY 4.0. Instruments, pumps and the pipes
+            added since May 2026 come from the council's test dataset: no licence stated, and they may change.
+            Aerial photos: Toitū Te Whenua LINZ and partners, CC BY 4.0.
+            Electricity: Transpower New Zealand, CC BY 4.0; © OpenStreetMap contributors (ODbL); the District
+            Plan and the streetlights of Queenstown Lakes District Council. Heights of wires and depths of
+            cables are typical figures, not records; most underground cables are not public and not shown.
+          </p>
+        </aside>
+
+        <aside id="info-panel" class="panel panel--info card" aria-label="Details" aria-live="polite" hidden>
+          <div class="panel__header">
+            <h2 class="panel__title">Details</h2>
+            <button type="button" class="panel__close" aria-label="Close details">×</button>
+          </div>
+          <h3 class="info__name"></h3>
+          <p class="info__kind"></p>
+          <dl class="info__list"></dl>
+          <div class="info__actions" hidden></div>
+          <p class="panel__note" hidden></p>
+        </aside>
+
+        <aside id="shutoff-panel" class="panel panel--shutoff card" aria-label="Cut the water" aria-live="polite" hidden>
+          <div class="panel__header">
+            <h2 class="panel__title">Cut the water</h2>
+            <button type="button" class="panel__close" aria-label="Close cut the water">×</button>
+          </div>
+          <h3 class="info__name shutoff__title"></h3>
+          <p class="shutoff__warning">Approximate: worked out from where pipes and valves are on the council's map. Check with the network controller before closing any valve.</p>
+          <p class="shutoff__summary"></p>
+          <ol class="shutoff__list shutoff__valves"></ol>
+          <div class="shutoff__more"></div>
+          <p class="panel__note"></p>
+        </aside>
+
+        <div id="dig-badge" class="dig-badge" role="status" aria-live="polite" hidden>
+          <span class="dig-badge__text"></span>
+          <span class="dig-badge__hint">Drag to walk round it · pinch or wheel to get closer · tap anything for details</span>
+          <button type="button" class="dig-badge__exit">Exit</button>
+        </div>
+
+        <div id="underground-bar" class="depth-bar" role="group" aria-label="Underground view" hidden>
+          <strong class="depth-bar__title" hidden>Open ground</strong>
+          <span id="depth-scale-label" class="depth-bar__label">Depths drawn</span>
+          <div class="segmented segmented--small" role="group" aria-labelledby="depth-scale-label">
+            <button type="button" data-depth-scale="1" aria-pressed="true" title="To scale">×1</button>
+            <button type="button" data-depth-scale="2" aria-pressed="false" title="Twice as deep as they are: shallow and deep pipes are easier to tell apart">×2</button>
+            <button type="button" data-depth-scale="3" aria-pressed="false" title="Three times as deep as they are">×3</button>
+            <button type="button" data-depth-scale="5" aria-pressed="false" title="Five times as deep as they are">×5</button>
+          </div>
+          <label class="depth-bar__ground">Ground <input type="range" min="0.05" max="0.9" step="0.05" aria-label="How solid the ground looks: how solid the ground looks: left see-through, right solid" /></label>
+          <button type="button" id="face-on-button" class="depth-bar__face" aria-pressed="false" title="Face-on: the ground is cut straight across what you look at, as wide as the screen, and you stand in front of the cut" hidden>Face-on</button>
+          <span id="face-back" class="depth-bar__back" hidden>
+            <span id="face-back-label">Behind the cut</span>
+            <span class="segmented segmented--small" role="group" aria-labelledby="face-back-label">
+              <button type="button" data-face-back="10" aria-pressed="false">10 m</button>
+              <button type="button" data-face-back="20" aria-pressed="true">20 m</button>
+              <button type="button" data-face-back="40" aria-pressed="false">40 m</button>
+            </span>
+          </span>
+          <span class="depth-bar__note" role="status" hidden></span>
+        </div>
+
+        <div id="draw" class="draw" hidden>
+          <svg class="draw__svg" aria-hidden="true">
+            <polyline class="draw__line draw__line--halo" />
+            <polyline class="draw__line" />
+            <line class="draw__next" />
+            <g class="draw__dots"></g>
+          </svg>
+          <svg class="draw__cross" viewBox="0 0 64 64" aria-hidden="true">
+            <g fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"><circle cx="32" cy="32" r="13" /><path d="M32 4v18M32 42v18M4 32h18M42 32h18" /></g>
+            <g fill="none" stroke="#13232f" stroke-width="2" stroke-linecap="round"><circle cx="32" cy="32" r="13" /><path d="M32 4v18M32 42v18M4 32h18M42 32h18" /></g>
+            <circle cx="32" cy="32" r="1.8" fill="#13232f" />
+          </svg>
+          <div class="draw__length" hidden></div>
+          <div class="draw__hint card">
+            <div><strong>Add a pipe or cable</strong><span class="draw__words" role="status"></span></div>
+            <button type="button" class="panel__close draw__cancel" aria-label="Stop drawing">×</button>
+          </div>
+          <div class="draw__bar" role="group" aria-label="Drawing">
+            <button type="button" class="draw__undo" disabled>Undo</button>
+            <button type="button" class="draw__add">Add point</button>
+            <button type="button" class="draw__finish" disabled>Done</button>
+          </div>
+        </div>
+
+        <div id="map-tools" class="map-tools" role="group" aria-label="Map navigation">
+          <div class="map-tools__group" data-3d-only>
+            <button type="button" class="icon-button" data-nav="turnLeft" title="Turn the view left">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 4v6h6" /><path d="M3.5 15a9 9 0 1 0 2.1-9.4L1 10" /></svg>
+              <span class="visually-hidden">Turn the view left</span>
+            </button>
+            <button type="button" class="icon-button" data-nav="turnRight" title="Turn the view right">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 4v6h-6" /><path d="M20.5 15a9 9 0 1 1-2.1-9.4L23 10" /></svg>
+              <span class="visually-hidden">Turn the view right</span>
+            </button>
+            <button type="button" class="icon-button" data-nav="tiltFlatter" title="Tilt: look more towards the horizon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 19h18" /><path d="m6 13 6-6 6 6" /></svg>
+              <span class="visually-hidden">Tilt: look more towards the horizon</span>
+            </button>
+            <button type="button" class="icon-button" data-nav="tiltSteeper" title="Tilt: look more from above">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18" /><path d="m6 11 6 6 6-6" /></svg>
+              <span class="visually-hidden">Tilt: look more from above</span>
+            </button>
+          </div>
+          <div class="map-tools__group">
+            <button type="button" class="icon-button" data-nav="zoomIn" title="Zoom in">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+              <span class="visually-hidden">Zoom in</span>
+            </button>
+            <button type="button" class="icon-button" data-nav="zoomOut" title="Zoom out">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14" /></svg>
+              <span class="visually-hidden">Zoom out</span>
+            </button>
+            <button type="button" class="icon-button" data-nav="northUp" title="North up" data-3d-only>
+              <svg class="compass" viewBox="0 0 24 24" aria-hidden="true"><g class="compass__needle"><path d="M12 2.5 15.5 12h-7z" fill="#d6336c" /><path d="M12 21.5 8.5 12h7z" fill="currentColor" opacity="0.35" /></g></svg>
+              <span class="visually-hidden">North up</span>
+            </button>
+            <button type="button" id="recentre-button" class="icon-button" title="Back to the selected zone">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.5" /><path d="M12 2v4M12 18v4M2 12h4M18 12h4" /></svg>
+              <span class="visually-hidden">Back to the selected zone</span>
+            </button>
+          </div>
+        </div>
+
+        <section id="years-bar" class="years-bar card" aria-label="Pipes by year installed" hidden>
+          <div class="years-bar__top">
+            <button type="button" class="years-bar__play icon-button" aria-pressed="false" title="Play: watch the networks grow">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path class="years-bar__icon-play" d="M8 5v14l11-7z" fill="currentColor" /><path class="years-bar__icon-pause" d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor" /></svg>
+              <span class="visually-hidden">Play</span>
+            </button>
+            <div class="years-bar__title"><span class="years-bar__label">All years</span> <strong class="years-bar__year"></strong></div>
+            <button type="button" class="years-bar__close" aria-label="Close: back to the colours of the networks">×</button>
+          </div>
+          <input type="range" class="years-bar__slider" step="1" aria-label="Show what was laid up to this year" />
+          <div class="years-bar__chips" role="group" aria-label="Quick choices">
+            <button type="button" data-range="all" aria-pressed="true">All</button>
+            <button type="button" data-range="5" aria-pressed="false">Last 5 years</button>
+            <button type="button" data-range="2" aria-pressed="false">Last 2 years</button>
+            <button type="button" id="years-photo" class="years-bar__photo" aria-pressed="false" title="Background: the aerial photos of the time (1983 to today)" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="2" /><path d="M8 6l1.5-2.5h5L16 6" /><circle cx="12" cy="13" r="3.5" /></svg>
+              <span>Photo<span class="years-bar__photo-rest"> of the time</span></span>
+            </button>
+          </div>
+          <p id="years-photo-words" class="years-bar__words" hidden></p>
+          <ul class="years-bar__legend" aria-label="Colours by year installed"></ul>
+        </section>
+
+        <section id="profile" class="profile card" aria-label="Long section of the selected pipe" hidden>
+          <div class="profile__top">
+            <div class="profile__title"><strong class="profile__name"></strong> <span class="profile__summary"></span></div>
+            <div class="segmented segmented--small" role="group" aria-label="How heights are drawn">
+              <button type="button" data-profile-mode="depth" aria-pressed="true" title="The ground drawn flat: how deep everything is">Depth</button>
+              <button type="button" data-profile-mode="levels" aria-pressed="false" title="True heights above sea level: how the ground and the pipe rise and fall">Levels</button>
+            </div>
+            <button type="button" class="profile__close" aria-label="Close the long section">×</button>
+          </div>
+          <div class="profile__drawing"><svg class="profile__svg" role="img" aria-label="Long section: the ground, the pipe under it, manholes and crossing pipes"></svg></div>
+          <p class="profile__readout" aria-live="polite"></p>
+        </section>
+
+        <div id="status" class="status" role="status" aria-live="polite">
+          <span class="status__spinner" aria-hidden="true"></span>
+          <span class="status__text">Loading…</span>
+        </div>
+
+        <div id="credits" class="credits"></div>
+      </main>
+
+      <footer class="disclaimer" role="note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3.5 2.5 20h19L12 3.5Z" />
+          <path d="M12 10v4.5M12 17.2v.1" />
+        </svg>
+        <span>
+          <strong>DEMO</strong> – approximate depths – do not use for excavation. Always check
+          <a href="https://www.beforeudig.co.nz/" target="_blank" rel="noopener">beforeUdig</a>.
+        </span>
+      </footer>
+    </div>
+
+    <noscript>This demo needs JavaScript.</noscript>
+
+    <script>
+      // The page only works when served by the small local server (start-demo.bat), not when
+      // index.html is opened directly from the folder. Say so instead of loading forever.
+      if (location.protocol === 'file:') {
+        document.getElementById('status').className = 'status status--error';
+        document.querySelector('#status .status__text').textContent =
+          'Start the demo with start-demo.bat – opening index.html directly does not work.';
+      }
+
+      // Cesium starts one background worker per processor thread to build shapes (21 on a
+      // 22-thread PC, about 150 MB of memory). This demo's shapes are small, so machines with
+      // more than 4 threads are told they have 4. This must run before the Cesium script below.
+      try {
+        if (navigator.hardwareConcurrency > 4) {
+          Object.defineProperty(Navigator.prototype, 'hardwareConcurrency', { configurable: true, get: () => 4 });
+        }
+      } catch {
+        // Not allowed in this browser: Cesium simply uses its default.
+      }
+    </script>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.147/Build/Cesium/Cesium.js"></script>
+    <script type="module" src="src/main.js?v=634636edba"></script>
+  </body>
+</html>
