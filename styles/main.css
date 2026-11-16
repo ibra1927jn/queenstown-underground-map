@@ -798,6 +798,36 @@ body.is-drawing .topbar {
   color: #8a4b00;
 }
 
+/* Stop the flow (src/tools/sewerStopView.js): the panel of "Cut the water", in its place, with what follows */
+/* The warning stays in view while the panel is scrolled… */
+.panel--sewer .shutoff__warning {
+  position: sticky;
+  z-index: 1;
+  top: 0;
+}
+
+/* …and a strip of the card's white stays over the panel's padding (14px) above it, or the lines scrolled past would show there. */
+.panel--sewer::before {
+  content: "";
+  position: sticky;
+  z-index: 1;
+  top: -14px;
+  display: block;
+  height: 14px;
+  margin-top: -14px;
+  background: #fff;
+}
+
+/* A plain sentence of the answer (the cautions are .shutoff__flag). */
+.sewer__text {
+  margin: 4px 0 0;
+  font-size: 13px;
+}
+
+.sewer__notes {
+  margin: 0 0 8px;
+}
+
 .panel__header {
   display: flex;
   align-items: center;

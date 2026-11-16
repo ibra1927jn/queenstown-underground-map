@@ -281,6 +281,46 @@ export const CONFIG = {
     ],
   },
 
+  /** "Stop the flow" (src/tools/sewerStopView.js): where to plug a sewer and pump round, or which pumps to stop. */
+  sewerStop: {
+    // Drawn like "Cut the water" (shutoff, above): the same colours, widths and views.
+    tappedColor: '#ffd43b', // the pipe that was tapped
+    stretchColor: '#f76707', // the stretch: between the plugs and the place to pump round to, or out to the valves
+    wayColor: '#7a3b06', // the way on from there: darker…
+    lineWidthPx: 7,
+    wayWidthPx: 4, // …and thinner
+    connectionColor: '#13232f', // a dot where each property connection joins the stretch…
+    connectionDotPx: 9, // …this big
+    badgePx: 30,
+    minViewSpanM: 120, // the view shows at least this much round the stretch…
+    maxWiden: 3, // …up to this many times more on a wide screen, where the panels cover the sides of the map…
+    markViewSpanM: 60, // …and this much round a manhole, a valve or a station picked from the list
+    viewPitchDegrees: -60,
+    sheetShiftShare: 0.45, // on a phone the panel covers the bottom: the view moves up by this share of its width
+    /**
+     * The round badges, in the list and on the map: fill, ink and ring (white unless said), how big
+     * beside a plug's, and the order they are drawn in (the higher, the more on top).
+     */
+    badges: {
+      plug: { fill: '#c92a2a', order: 6 }, // a number: a manhole to plug, a valve to close
+      to: { fill: '#364fc7', order: 5 }, // P: where to pump round to; →: where a pumped main discharges
+      station: { fill: '#0b7285', order: 4 }, // S: a pump station to stop
+      failed: { fill: '#13232f', ink: '#ffd43b', ring: '#ffd43b', order: 3 }, // !: can't use, won't close
+      check: { fill: '#fcc419', ink: '#13232f', ring: '#13232f', scale: 0.8, order: 2 }, // ?: a doubt; S, V: a pump or a valve to find on site
+      open: { fill: '#adb5bd', scale: 0.75, order: 1 }, // D: a place to drain; –: a valve with nothing behind it
+      plain: { fill: '#868e96', scale: 0.75 }, // other valves on the stretch
+    },
+    // What the answers are worked out with (src/util/sewerStop.js).
+    litresPerConnectionDay: 750, // QLDC's design figures: 250 litres a person a day…
+    peoplePerConnection: 3, // …and this many people a dwelling (the panel says both)
+    peakFactor: 2.5, // the daily peak over the average of a dry day
+    bigPipeMm: 300, // other councils treat plugging a pipe larger than this as high-risk work
+    blockProperties: 50, // QLDC's standard: the most properties behind the valves of one block of a pressure sewer
+    maxPlugs: 40, // the search for places to plug gives up beyond this many
+    // Whom to call if sewage escapes: QLDC, 24 hours; the Otago Regional Council's pollution hotline.
+    phones: { queenstown: '03 441 0499', wanaka: '03 443 0024', pollution: '0800 800 033' },
+  },
+
   /** The excavation view (src/tools/excavationView.js): a pit dug where you look. */
   excavation: {
     sideM: { desktop: 24, phone: 16 }, // the pit is square, this wide

@@ -65,10 +65,14 @@ const KIND_WORD = { valve: 'valve', hydrant: 'hydrant', fitting: 'fitting', mete
 
 const OWNER = { council: 'Council (QLDC)', private: 'Private (property owner)', unknown: 'Not recorded' };
 
-/** How the direction of the water in a pipe is known (scripts/data/lib/pipe-depth.mjs). */
+/**
+ * How the direction of the water in a pipe is known (scripts/data/lib/pipe-depth.mjs). 'ids': the
+ * upstream and downstream nodes of the council's record – what decides for every sewer, and for a
+ * stormwater pipe without two levels.
+ */
 const FLOW_BASIS = {
   levels: 'from its two recorded levels',
-  ids: 'from the manhole the record calls upstream (no levels to check it)',
+  ids: "from the end the council's record calls upstream",
   gully: 'a lead runs from its road gully',
   pumped: 'a pumped main: as the record says, not checked against levels',
   estimate: 'an estimate: away from the nearest reservoir, treatment plant or bore along the pipes. Under pressure the real direction changes with demand',
@@ -808,7 +812,7 @@ export function createNetworkLayer({ viewer, sampleGround, dataPath, network, li
   }
 
   /** The depth rows of the details panel. */
-  function depthRows({ depth, flow }) {
+  function depthRows({ kind, depth, flow, inUse, source }) {
     const gravity = depth.measure === 'invert';
     const [first, last] = [0, 1].map((end) => ({ value: depth.at[end], from: depth.from[end] }));
     const word = gravity ? 'Depth' : 'Cover';
@@ -817,9 +821,16 @@ export function createNetworkLayer({ viewer, sampleGround, dataPath, network, li
 
     // Pipes whose flow direction the data supports: the ends are named by the way the water runs (the
     // arrows of "Flow direction" point the same way). A pumped main runs from its pump end, uphill or not.
-    const from = flow?.from ?? (gravity ? depth.upstream : undefined);
+    // A main has that direction or none (`flow`): the end its "upstream" level was paired with
+    // (`depth.upstream`) places the depths and says nothing of the flow. A gravity property connection
+    // has no `flow`; it runs from the property to the main, and there `depth.upstream` is that end.
+    const from = flow?.from ?? (kind === 'lateral' && gravity ? depth.upstream : undefined);
     const names = flow?.basis === 'pumped' ? ['pump end', 'far end'] : String(flow?.basis).startsWith('estimate') ? ['end nearer the source', 'far end'] : ['upper end', 'lower end'];
-    const runs = { label: 'Water runs', value: flow ? `From the ${names[0]} to the ${names[1]} – ${FLOW_BASIS[flow.basis]}` : undefined };
+    // A sewer keeps the direction of the council's record even when its two levels rise that way: said here.
+    const levelsAgainst = flow?.levelsAgainst === undefined ? '' : `. Its two recorded levels say the opposite (by ${metres(flow.levelsAgainst)}): one of them is probably wrong`;
+    // A sewer in use with no direction says why it has no arrow (the council's newer pipes are not read for it).
+    const noDirection = network.id === 'wastewater' && kind === 'main' && inUse && source !== 'newer' ? "Not recorded – the council's record does not say which end is upstream" : undefined;
+    const runs = { label: 'Water runs', value: flow ? `From the ${names[0]} to the ${names[1]} – ${FLOW_BASIS[flow.basis]}${levelsAgainst}` : noDirection };
 
     if (first.value === last.value && first.from === last.from) {
       return [

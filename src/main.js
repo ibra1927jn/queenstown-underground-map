@@ -25,6 +25,7 @@ import { createBaseMapControl } from './ui/baseMapControl.js';
 import { createExcavationView } from './tools/excavationView.js';
 import { createProfileView } from './tools/profileView.js';
 import { createShutoffView } from './tools/shutoffView.js';
+import { createSewerStopView } from './tools/sewerStopView.js';
 import { createAddressFinder } from './tools/addressFinder.js';
 import { createAddedPipesTool } from './tools/addedPipesTool.js';
 import { createAddedStore, zoneFor } from './util/addedPipes.js';
@@ -490,6 +491,7 @@ async function start(status) {
       finder.close();
       profile.close();
       shutoff.close();
+      sewerStop.close();
       infoPanel.hide();
       picking.clear();
       picking.setEnabled(false); // a tap on the map selects nothing while drawing
@@ -523,8 +525,29 @@ async function start(status) {
   async function startShutoff(pipe, tappedAt) {
     const p = pipe.properties;
     if (window.matchMedia(PHONE_QUERY).matches) infoPanel.hide(); // the panel takes the card's place
+    sewerStop.close(); // the two tools open in the same place: one at a time
     await shutoff.show({ pipeId: p.id, tappedAt, diameter: p.diameter, title: [p.type ?? 'Water main', p.diameter ? `${p.diameter} mm` : undefined, p.street].filter(Boolean).join(' · ') });
   }
+
+  // ---- Stop the flow: where to plug a sewer and pump round, or which pumps to stop on a pumped main ----
+  const sewerStop = createSewerStopView({
+    viewer,
+    panel: byId('sewer-panel'),
+    dataPath: CONFIG.dataPath,
+    sampleGround,
+    settings: CONFIG.sewerStop,
+    isSheet: () => window.matchMedia(PHONE_QUERY).matches,
+    canFly: () => !cut.active, // the excavation holds the camera
+    beforeFlight: () => openGround?.releaseCamera(),
+    onToggle: (open) => document.body.classList.toggle('is-sewer-stop', open),
+  });
+  async function startSewerStop(pipe, tappedAt) {
+    const p = pipe.properties;
+    if (window.matchMedia(PHONE_QUERY).matches) infoPanel.hide(); // the panel takes the card's place
+    shutoff.close(); // the two tools open in the same place: one at a time
+    await sewerStop.show({ pipeId: p.id, tappedAt, type: p.type, source: p.source, title: [p.type ?? 'Wastewater main', p.diameter ? `${p.diameter} mm` : undefined, p.street].filter(Boolean).join(' · ') });
+  }
+
   const picking = createPicking(viewer, {
     layers,
     onSelect: (description, id, tappedAt) => {
@@ -534,15 +557,19 @@ async function start(status) {
         description.actions = [{ label: 'Long section', title: 'A face-on drawing of this pipe and the pipes that carry on from it: ground, depth, manholes, crossings', run: () => showProfile(id) }];
         if (profile.open) profile.show(id);
       }
+      const pipe = pipeOf(id);
+      const mainInUse = pipe?.properties.kind === 'main' && pipe.properties.inUse !== false && pipe.properties.source !== 'mine';
       // A water main in use: which valves to close to leave it without water.
-      const pipe = id?.layer === 'water' ? pipeOf(id) : undefined;
-      if (pipe?.properties.kind === 'main' && pipe.properties.inUse !== false && pipe.properties.source !== 'mine') {
+      if (mainInUse && id.layer === 'water') {
         (description.actions ??= []).push({ label: 'Cut the water here', title: 'Which valves to close to leave this main without water (approximate)', run: () => startShutoff(pipe, tappedAt) });
       }
+      // A wastewater main in use: where to plug it and pump round, or which pumps to stop.
+      if (mainInUse && id.layer === 'wastewater') {
+        (description.actions ??= []).push({ label: 'Stop the flow here', title: 'Where to plug and pump round, or which pumps to stop, to work on this pipe (approximate)', run: () => startSewerStop(pipe, tappedAt) });
+      }
       // A pipe added by hand: it can be changed or taken off the map.
-      const mine = pipeOf(id);
-      if (mine?.properties.source === 'mine') {
-        (description.actions ??= []).push({ label: 'Change or delete', title: 'Change what you said about it, or take it off the map', run: () => addedPipes.edit(mine.properties.id) });
+      if (pipe?.properties.source === 'mine') {
+        (description.actions ??= []).push({ label: 'Change or delete', title: 'Change what you said about it, or take it off the map', run: () => addedPipes.edit(pipe.properties.id) });
       }
       // On a phone the long section takes the place of the card.
       if (profile.open && window.matchMedia(PHONE_QUERY).matches) infoPanel.hide();
@@ -696,7 +723,7 @@ async function start(status) {
   new ResizeObserver(measureCredits).observe(credits);
 
   // Handy for troubleshooting from the browser console.
-  window.demo = { viewer, viewMode, layers, zones, terrain, quality, undergroundView, excavation: cut, years, baseMap, profile, picking, openGround, viewMenu, finder, added: addedPipes, addedStore };
+  window.demo = { viewer, viewMode, layers, zones, terrain, quality, undergroundView, excavation: cut, years, baseMap, profile, picking, openGround, viewMenu, finder, added: addedPipes, addedStore, shutoff, sewerStop };
 
   await activateZone(startZone, 'jump');
 }
